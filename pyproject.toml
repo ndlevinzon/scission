@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scission"
+version = "0.3.0"
+description = "AMBER-aware torsion fragment generation for ligand scanning workflows"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Zeke Piskulich", email = "piskulichz@gmail.com"},
+  {name = "Nate Levinzon", email = "ndlevinzon@gmail.com"},
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy<2",
+  "networkx>=3.0",
+  "pyyaml>=6.0",
+  "parmed",
+  "rdkit",
+]
+
+urls = { "Homepage" = "https://gitlab.com/RutgersLBSR/scission" }
+
+[project.optional-dependencies]
+# Kept so `pip install -e '.[dev,chem]'` still matches upstream docs.
+chem = [
+  "parmed",
+  "rdkit",
+]
+dev = [
+  "pytest>=8.0",
+]
+docs = [
+  "sphinx>=8.0",
+  "myst-parser>=4.0",
+]
+
+[project.scripts]
+scission = "scission.Cli:main"
+
+# This directory is both the project root and the import package.
+# `pip install -e src/scission` or `pip install -e .` here.
+[tool.setuptools]
+package-dir = { "scission" = "." }
+packages = ["scission"]
+
+[tool.setuptools.package-data]
+scission = ["README.md"]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
