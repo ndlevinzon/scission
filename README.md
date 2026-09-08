@@ -6,6 +6,7 @@ rotatable bonds, cap and reduce fragments, write scan-ready Amber files, and
 merge fitted `DIHE` terms back into the parent `frcmod`.
 
 Docs: https://scission-da161d.gitlab.io/
+Repo: https://github.com/ndlevinzon/scission
 
 ## Install
 
@@ -15,6 +16,12 @@ From this directory:
 
 ```bash
 python3 -m pip install -e .
+```
+
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
 ```
 
 `numpy<2` matches ParmEd. RDKit is required for SMARTS matching and

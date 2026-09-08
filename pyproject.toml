@@ -26,7 +26,7 @@ dependencies = [
   "rdkit",
 ]
 
-urls = { "Homepage" = "https://gitlab.com/RutgersLBSR/scission" }
+urls = { "Homepage" = "https://github.com/ndlevinzon/scission" }
 
 [project.optional-dependencies]
 # Kept so `pip install -e '.[dev,chem]'` still matches upstream docs.
@@ -46,7 +46,7 @@ docs = [
 scission = "scission.Cli:main"
 
 # This directory is both the project root and the import package.
-# `pip install -e src/scission` or `pip install -e .` here.
+# `pip install -e .` here, or `pip install -e scission` from the ALPS workspace.
 [tool.setuptools]
 package-dir = { "scission" = "." }
 packages = ["scission"]
