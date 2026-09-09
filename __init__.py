@@ -2,7 +2,7 @@
 # from an independent checkout of the same import name.
 # Independent GitLab/PyPI installs must leave this False / omitted.
 __ligandparam_bundle__ = False
-__version__ = "0.3.0"
+__version__ = "0.9.0"
 
 from .Models import (
     Atom,

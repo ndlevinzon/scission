@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scission"
-version = "0.3.0"
+version = "0.9.0"
 description = "AMBER-aware torsion fragment generation for ligand scanning workflows"
 readme = "README.md"
 requires-python = ">=3.10"
