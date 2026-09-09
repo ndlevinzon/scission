@@ -320,6 +320,55 @@ def _candidate_from_domains(
     )
 
 
+def candidate_from_retained_atoms(
+    ligand: Ligand,
+    torsion: TorsionDefinition,
+    retained_atoms: set[int],
+    *,
+    shell_level: int = 0,
+    is_parent_fallback: bool | None = None,
+) -> CandidateFragment:
+    """Build a candidate from an explicit retained-atom set.
+
+    Used by named fragmentation strategies (Pfizer / WBO) after they choose
+    which parent atoms to keep. Cut bonds and cap sites follow the same rules
+    as domain-shell candidates.
+
+    Args:
+        ligand: Parent ligand record.
+        torsion: Torsion the fragment is intended to preserve.
+        retained_atoms: Parent atom indices to keep (hydrogens optional).
+        shell_level: Growth depth used to generate the candidate.
+        is_parent_fallback: When omitted, true iff every parent atom is kept.
+
+    Returns:
+        A populated :class:`CandidateFragment`.
+    """
+
+    graph = build_graph(ligand)
+    ring_edges = ring_bond_set(graph, ligand)
+    retained_heavy = {
+        atom_idx for atom_idx in retained_atoms if graph.nodes[atom_idx]["atom"].element != "H"
+    }
+    retained = _add_attached_hydrogens(graph, retained_heavy)
+    cut_bonds, cap_sites = _cut_bonds_for_retained(graph, retained_heavy, ring_edges)
+    ring_atoms = {atom for edge in ring_edges for atom in edge}
+    if is_parent_fallback is None:
+        is_parent_fallback = retained >= {atom.index for atom in ligand.atoms}
+    return CandidateFragment(
+        candidate_id=_candidate_id(retained, cut_bonds),
+        retained_atoms=retained,
+        cut_bonds=cut_bonds,
+        cap_sites=cap_sites,
+        shell_level=shell_level,
+        net_charge=_candidate_charge(ligand, retained),
+        ring_count=1 if retained_heavy & ring_atoms else 0,
+        ring_cap_count=sum(1 for site in cap_sites if site.retained_atom in ring_atoms),
+        is_parent_fallback=is_parent_fallback,
+        torsion_labels={torsion.label},
+    )
+
+
 def build_candidate_fragments(
     ligand: Ligand,
     torsion: TorsionDefinition,

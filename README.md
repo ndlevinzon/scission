@@ -53,6 +53,19 @@ scission fragment \
   --mol2 LIG.mol2 --lib LIG.lib --frcmod LIG.frcmod --outdir fragments
 ```
 
+Pfizer or WBO-style growth around each rotatable bond (Stern et al.,
+[bioRxiv 2020.08.27.270934v2](https://www.biorxiv.org/content/10.1101/2020.08.27.270934v2)):
+
+```bash
+scission fragment --strategy pfizer \
+  --mol2 LIG.mol2 --lib LIG.lib --frcmod LIG.frcmod --outdir fragments
+scission fragment --strategy wbo \
+  --mol2 LIG.mol2 --lib LIG.lib --frcmod LIG.frcmod --outdir fragments
+```
+
+YAML `strategy: pfizer` (or `wbo`) is equivalent. `scission` remains the
+default. Register a custom scheme with `scission.register_strategy`.
+
 Allow-list only matching bonds:
 
 ```bash
@@ -87,9 +100,22 @@ result = fragment_ligand(
     InputBundle(mol2_path=Path("LIG.mol2"), lib_path=Path("LIG.lib"),
                 frcmod_path=Path("LIG.frcmod")),
     Path("fragments"),
-    FragmentConfig(),
+    FragmentConfig(strategy="pfizer"),
 )
 ```
+
+Custom schemes return the same `CandidateFragment` objects (capping and Amber
+writes stay unchanged):
+
+```python
+from scission import register_strategy
+from scission.Fragments import candidate_from_retained_atoms
+
+@register_strategy("quartet_only")
+def quartet_only(ligand, torsion, config):
+    return [candidate_from_retained_atoms(ligand, torsion, set(torsion.atom_indices))]
+```
+
 
 ## Outputs (per fragment)
 

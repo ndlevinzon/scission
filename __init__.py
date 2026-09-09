@@ -16,6 +16,7 @@ from .Models import (
     TorsionDefinition,
 )
 from .Pipeline import fragment_ligand
+from .Strategies import available_strategies, register_strategy
 from .Torsions import match_central_bond_smarts
 
 __all__ = [
@@ -28,6 +29,8 @@ __all__ = [
     "Ligand",
     "SelectedFragment",
     "TorsionDefinition",
+    "available_strategies",
     "fragment_ligand",
     "match_central_bond_smarts",
+    "register_strategy",
 ]

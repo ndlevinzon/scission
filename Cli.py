@@ -82,6 +82,27 @@ def build_parser() -> argparse.ArgumentParser:
             "every rotatable torsion is fragmented."
         ),
     )
+    fragment.add_argument(
+        "--strategy",
+        default=None,
+        help=(
+            "Fragmentation scheme: scission (default; rigid-domain shells), "
+            "pfizer, or wbo. Pfizer and WBO follow Stern et al., "
+            "bioRxiv 2020.08.27.270934. Custom names require "
+            "scission.Strategies.register_strategy."
+        ),
+    )
+    fragment.add_argument(
+        "--wbo-max-growth",
+        type=int,
+        default=None,
+        help="For --strategy wbo, stop after this many substituent additions",
+    )
+    fragment.add_argument(
+        "--keep-non-rotor-ring-substituents",
+        action="store_true",
+        help="Pfizer/WBO: keep non-rotatable heavy substituents on included rings",
+    )
     pick = subparsers.add_parser(
         "pick-bond",
         help="Interactively pick a central bond and build a restrict SMARTS",
@@ -164,6 +185,12 @@ def main(argv: list[str] | None = None) -> int:
             )
         if args.nproc is not None:
             config = replace(config, nproc=max(1, int(args.nproc)))
+        if args.strategy:
+            config = replace(config, strategy=str(args.strategy))
+        if args.wbo_max_growth is not None:
+            config = replace(config, wbo_max_growth=int(args.wbo_max_growth))
+        if args.keep_non_rotor_ring_substituents:
+            config = replace(config, keep_non_rotor_ring_substituents=True)
         result = fragment_ligand(
             InputBundle(
                 mol2_path=args.mol2,

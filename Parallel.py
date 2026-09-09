@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Sequence
 
-from .Fragments import build_candidate_fragments
+from .Strategies import build_candidates
 from .Models import (
     CandidateFragment,
     FragmentConfig,
@@ -40,22 +40,16 @@ def _screen_one_torsion(job: dict[str, Any]) -> dict[str, Any]:
     """Screen all candidates for one torsion (spawn-pool worker)."""
     ligand: Ligand = job["ligand"]
     torsion: TorsionDefinition = job["torsion"]
-    include_rigid = bool(job["include_rigid_single_bonds"])
-    rotatable_smarts = tuple(job["rotatable_bond_smarts"])
-    angle_step = int(job["angle_step"])
-    thresholds = job["thresholds"]
-    use_parent_fallback = bool(job["use_parent_fallback"])
+    config = job["config"]
+    angle_step = int(config.angle_step)
+    thresholds = config.clash_thresholds
+    use_parent_fallback = bool(config.use_parent_fallback)
 
     valid_for_torsion = False
     best_failure: tuple[float, dict[str, object]] | None = None
     evaluations: list[dict[str, Any]] = []
 
-    for candidate in build_candidate_fragments(
-        ligand,
-        torsion,
-        include_rigid_single_bonds=include_rigid,
-        rotatable_bond_smarts=rotatable_smarts,
-    ):
+    for candidate in build_candidates(ligand, torsion, config):
         screen = screen_candidate(
             ligand,
             torsion,
@@ -124,15 +118,7 @@ def screen_torsions(
         return candidate_pool, accepted_by_torsion, rejected_torsions
 
     jobs = [
-        {
-            "ligand": ligand,
-            "torsion": torsion,
-            "include_rigid_single_bonds": config.include_rigid_single_bonds,
-            "rotatable_bond_smarts": tuple(config.rotatable_bond_smarts),
-            "angle_step": config.angle_step,
-            "thresholds": config.clash_thresholds,
-            "use_parent_fallback": config.use_parent_fallback,
-        }
+        {"ligand": ligand, "torsion": torsion, "config": config}
         for torsion in torsions
     ]
 

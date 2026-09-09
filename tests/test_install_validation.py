@@ -36,6 +36,7 @@ class TestCorePackageInstall(unittest.TestCase):
             "FragmentConfig",
             "SelectedFragment",
             "match_central_bond_smarts",
+            "register_strategy",
         ):
             self.assertTrue(hasattr(scission, name), name)
 

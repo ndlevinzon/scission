@@ -169,6 +169,25 @@ class ClashThresholds:
     far_scale: float = 0.60
 
 
+def _optional_int(value: Any) -> int | None:
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
+def _parse_functional_groups(payload: dict[str, Any]) -> dict[str, str] | None:
+    """``None`` = paper defaults; empty mapping = preserve no extra groups."""
+
+    if "functional_groups" not in payload:
+        return None
+    raw = payload["functional_groups"]
+    if raw in (None, False):
+        return {}
+    if not isinstance(raw, dict):
+        raise TypeError("functional_groups must be a mapping of name -> SMARTS")
+    return {str(name): str(smarts) for name, smarts in raw.items()}
+
+
 @dataclass(frozen=True)
 class FragmentConfig:
     """Configuration options that control fragment generation and selection.
@@ -222,6 +241,18 @@ class FragmentConfig:
             valid coverage during selection.
         nproc: Worker budget for torsion screening (process pool) and
             per-fragment Amber writes (thread pool). Default 1 (serial).
+        strategy: Fragmentation scheme. ``"scission"`` (default) is the
+            existing rigid-domain shell enumerator. ``"pfizer"`` and
+            ``"wbo"`` follow Stern et al., bioRxiv 2020.08.27.270934v2.
+            Custom names work after :func:`scission.Strategies.register_strategy`.
+        functional_groups: SMARTS of groups that Pfizer/WBO will not split.
+            ``None`` (default) uses the paper Table 1 list; ``{}`` preserves
+            none beyond rings.
+        keep_non_rotor_ring_substituents: When true, Pfizer/WBO keep
+            non-rotatable heavy substituents on included rings.
+        wbo_max_growth: For ``"wbo"``, stop after this many substituent
+            additions. ``None`` grows until the parent is reached (each step
+            is still a screened candidate).
     """
 
     angle_step: int = 30
@@ -239,6 +270,10 @@ class FragmentConfig:
     preserve_conjugated_neighbors: bool = True
     use_parent_fallback: bool = False
     nproc: int = 1
+    strategy: str = "scission"
+    functional_groups: dict[str, str] | None = None
+    keep_non_rotor_ring_substituents: bool = False
+    wbo_max_growth: int | None = None
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "FragmentConfig":
@@ -287,6 +322,12 @@ class FragmentConfig:
             ),
             use_parent_fallback=payload.get("use_parent_fallback", False),
             nproc=int(payload.get("nproc", 1)),
+            strategy=str(payload.get("strategy", "scission")),
+            functional_groups=_parse_functional_groups(payload),
+            keep_non_rotor_ring_substituents=bool(
+                payload.get("keep_non_rotor_ring_substituents", False)
+            ),
+            wbo_max_growth=_optional_int(payload.get("wbo_max_growth")),
         )
 
 
